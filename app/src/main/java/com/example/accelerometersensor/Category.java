@@ -1,5 +1,5 @@
 package com.example.accelerometersensor;
 
 public enum Category {
-    DIAM, SEPEDA_MOTORAN, LARI_LARI
+    DIAM, SEPEDA_MOTORAN, LOMPAT_LOMPAT
 }

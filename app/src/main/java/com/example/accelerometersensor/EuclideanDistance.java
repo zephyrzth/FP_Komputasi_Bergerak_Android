@@ -2,7 +2,7 @@ package com.example.accelerometersensor;
 
 public class EuclideanDistance {
 
-    public double calculateDistance(DataPoint firstPoint, DataPoint secondPoint) {
+    public static double calculateDistance(DataPoint firstPoint, DataPoint secondPoint) {
 
         double avgSquare_x = Math.pow(firstPoint.getAvg_x() - secondPoint.getAvg_x(), 2);
         double avgSquare_y = Math.pow(firstPoint.getAvg_y() - secondPoint.getAvg_y(), 2);
@@ -24,16 +24,14 @@ public class EuclideanDistance {
         double avgAbsDifSquare_y = Math.pow(firstPoint.getAvgabsdif_y() - secondPoint.getAvgabsdif_y(), 2);
         double avgAbsDifSquare_z = Math.pow(firstPoint.getAvgabsdif_z() - secondPoint.getAvgabsdif_z(), 2);
 
-        double avgResAccSquare_x = Math.pow(firstPoint.getAvgresacc_x() - secondPoint.getAvgresacc_x(), 2);
-        double avgResAccSquare_y = Math.pow(firstPoint.getAvgresacc_y() - secondPoint.getAvgresacc_y(), 2);
-        double avgResAccSquare_z = Math.pow(firstPoint.getAvgresacc_z() - secondPoint.getAvgresacc_z(), 2);
+        double avgResAccSquare = Math.pow(firstPoint.getAvgresacc() - secondPoint.getAvgresacc(), 2);
 
         double distance = Math.sqrt(avgSquare_x + avgSquare_y + avgSquare_z +
                                     stdDevSquare_x + stdDevSquare_y + stdDevSquare_z +
                                     maxSquare_x + maxSquare_y + maxSquare_z +
                                     minSquare_x + minSquare_y + minSquare_z +
                                     avgAbsDifSquare_x + avgAbsDifSquare_y + avgAbsDifSquare_z +
-                                    avgResAccSquare_x + avgResAccSquare_y + avgResAccSquare_z);
+                                    avgResAccSquare);
         return distance;
     }
 }

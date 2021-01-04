@@ -13,17 +13,25 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true">
 
+        <EditText
+            android:id="@+id/namaText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Masukkan nama Anda"/>
+
         <TextView
             android:id="@+id/xValue"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:layout_below="@id/namaText"
             android:text="xValue: 0.0"/>
 
         <TextView
             android:id="@+id/yValue"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="10dp"
             android:layout_below="@id/xValue"
             android:text="yValue: 0.0"/>
 
@@ -31,7 +39,7 @@
             android:id="@+id/zValue"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="10dp"
             android:layout_below="@id/yValue"
             android:text="zValue: 0.0"/>
 
@@ -39,7 +47,7 @@
             android:id="@+id/timeRecord"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="20dp"
             android:layout_below="@id/zValue"
             android:textAppearance="@android:style/TextAppearance.Large"
             android:textSize="56sp"
@@ -49,7 +57,7 @@
             android:id="@+id/accuracy"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="20dp"
             android:layout_below="@id/timeRecord"
             android:textSize="24sp"
             android:textAlignment="center"/>
@@ -62,7 +70,7 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_below="@id/relativeLayoutText"
-        android:layout_marginTop="30dp">
+        android:layout_marginTop="20dp">
 
         <Button
             android:id="@+id/btnStart"
@@ -85,5 +93,16 @@
             android:layout_toEndOf="@id/btnStop"/>
 
     </RelativeLayout>
+
+    <TextView
+        android:id="@+id/resultCategory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:layout_below="@id/relativeLayoutButton"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:text="Prediction Result: "
+        android:textAlignment="center"/>
 
 </RelativeLayout>

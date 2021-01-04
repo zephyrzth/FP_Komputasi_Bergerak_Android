@@ -22,11 +22,9 @@ public class DataPoint {
     public static final int AVGABSDIF_INDEX_Y = 13;
     public static final int AVGABSDIF_INDEX_Z = 14;
 
-    public static final int AVGRESACC_INDEX_X = 15;
-    public static final int AVGRESACC_INDEX_Y = 16;
-    public static final int AVGRESACC_INDEX_Z = 17;
+    public static final int AVGRESACC_INDEX = 15;
 
-    public static final int CATEGORY_INDEX = 18;
+    public static final int CATEGORY_INDEX = 16;
 
     private double avg_x;
     private double avg_y;
@@ -48,9 +46,7 @@ public class DataPoint {
     private double avgabsdif_y;
     private double avgabsdif_z;
 
-    private double avgresacc_x;
-    private double avgresacc_y;
-    private double avgresacc_z;
+    private double avgresacc;
 
     private Category category;
 
@@ -116,16 +112,8 @@ public class DataPoint {
         this.avgabsdif_z = avgabsdif_z;
     }
 
-    public void setAvgresacc_x(double avgresacc_x) {
-        this.avgresacc_x = avgresacc_x;
-    }
-
-    public void setAvgresacc_y(double avgresacc_y) {
-        this.avgresacc_y = avgresacc_y;
-    }
-
-    public void setAvgresacc_z(double avgresacc_z) {
-        this.avgresacc_z = avgresacc_z;
+    public void setAvgresacc(double avgresacc) {
+        this.avgresacc = avgresacc;
     }
 
     public void setCategory(Category category) {
@@ -192,16 +180,8 @@ public class DataPoint {
         return avgabsdif_z;
     }
 
-    public double getAvgresacc_x() {
-        return avgresacc_x;
-    }
-
-    public double getAvgresacc_y() {
-        return avgresacc_y;
-    }
-
-    public double getAvgresacc_z() {
-        return avgresacc_z;
+    public double getAvgresacc() {
+        return avgresacc;
     }
 
     public Category getCategory() {

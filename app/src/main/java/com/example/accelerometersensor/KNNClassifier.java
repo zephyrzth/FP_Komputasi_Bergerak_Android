@@ -1,7 +1,5 @@
 package com.example.accelerometersensor;
 
-import androidx.annotation.NonNull;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -15,12 +13,10 @@ public class KNNClassifier {
 
     private final int K;
     private float accuracy;
-    private EuclideanDistance euclideanDistance;
     private List<DataPoint> listTrainData, listTestData, listTestValidator;
 
     public KNNClassifier(int K) {
         this.K = K;
-        euclideanDistance = new EuclideanDistance();
         listTrainData = new ArrayList<>();
         listTestData = new ArrayList<>();
         listTestValidator = new ArrayList<>();
@@ -57,7 +53,7 @@ public class KNNClassifier {
     private List<Double> calculateDistances(DataPoint newPoint){
         List<Double> listDistance = new ArrayList<>();
         for (DataPoint trainData : listTrainData){
-            double distance = euclideanDistance.calculateDistance(newPoint, trainData);
+            double distance = EuclideanDistance.calculateDistance(newPoint, trainData);
             listDistance.add(distance);
         }
         return listDistance;
@@ -76,7 +72,7 @@ public class KNNClassifier {
         return category;
     }
 
-    private Category classifyDataPoint(DataPoint point){
+    public Category predict(DataPoint point){
         HashMap<Category, Integer> hashMap = new HashMap<>();
         List<Double> listDistance = calculateDistances(point);
         for (int i = 0; i < K; i++){
@@ -99,11 +95,11 @@ public class KNNClassifier {
         return getMaxCategory(hashMap);
     }
 
-    public float classify(){
+    public float checkAccuracy(){
         accuracy = 0;
         for (int i = 0;i < listTestData.size(); i++){
             DataPoint dataPoint = listTestData.get(i);
-            Category category = classifyDataPoint(dataPoint);
+            Category category = predict(dataPoint);
             if (isCorrect(category, listTestValidator.get(i).getCategory()))
                 accuracy++;
             dataPoint.setCategory(category);
