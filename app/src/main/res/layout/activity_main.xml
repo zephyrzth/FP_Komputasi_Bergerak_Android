@@ -44,11 +44,27 @@
             android:text="zValue: 0.0"/>
 
         <TextView
-            android:id="@+id/timeRecord"
+            android:id="@+id/latValue"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:layout_below="@id/zValue"
+            android:text="Latitude: 0.0"/>
+
+        <TextView
+            android:id="@+id/longValue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_below="@id/latValue"
+            android:text="Longitude: 0.0"/>
+
+        <TextView
+            android:id="@+id/timeRecord"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:layout_below="@id/longValue"
             android:textAppearance="@android:style/TextAppearance.Large"
             android:textSize="56sp"
             android:textAlignment="center"/>

@@ -11,19 +11,22 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.Html;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.opencsv.CSVWriter;
+
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -38,19 +41,30 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener {
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class MainActivity extends AppCompatActivity implements SensorEventListener, LocationListener {
 
     private static final String TAG = "DEBUG_TAG";
     private static final int SENSOR_DELAY = 100000;
     private static final String CSV_NAME = "accelerometer_data";
     private static final int K = 5;
-    private String csvFileName;
+    private static final int MIN_DISTANCE_GPS = 20;     // meters
+    private static final int MIN_TIME_GPS = 10000;      // miliseconds
+    public static final int REQUEST_ACTIVITY_RECOGNITION = 23;
 
     private SensorManager sensorManager;
     private Sensor mAccelerometer;
+    private LocationManager locationManager;
+    private LocationListener locationListener;
 
-    private TextView xValue, yValue, zValue, timeRecord, accuracy, resultCategory;
+    private TextView xValue, yValue, zValue, timeRecord, accuracy, resultCategory, latValue, longValue;
+    private EditText namaText;
+    private Button btnStart, btnStop, btnTest;
 
+    private String csvFileName;
     private int seconds = 0;
     private Boolean timeRunning = false;
     private Boolean isRecordAlreadyStarted = false;
@@ -59,17 +73,33 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private List<DataPoint> listTrainData;
     private CSVWriter csvWriter;
 
-    Button btLocation;
-    TextView textView1, textView2, textView3;
+    private ApiInterface mApiInterface;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        initWidgets();
+        runTimer();
+    }
+
+    private void initWidgets() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_ACTIVITY_RECOGNITION);
+        }
+
         Log.d(TAG, "onCreate: Initializing Sensor Services");
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_GPS, MIN_DISTANCE_GPS, this);
+
+        mApiInterface = ApiClient.getClient().create(ApiInterface.class);
 
         dataList = new ArrayList<>();
         testList = new ArrayList<>();
@@ -77,14 +107,38 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         xValue = (TextView) findViewById(R.id.xValue);
         yValue = (TextView) findViewById(R.id.yValue);
         zValue = (TextView) findViewById(R.id.zValue);
+        latValue = (TextView) findViewById(R.id.latValue);
+        longValue = (TextView) findViewById(R.id.longValue);
+        namaText = (EditText) findViewById(R.id.namaText);
         accuracy = (TextView) findViewById(R.id.accuracy);
         timeRecord = (TextView) findViewById(R.id.timeRecord);
         resultCategory = (TextView) findViewById(R.id.resultCategory);
-        findViewById(R.id.btnStart).setOnClickListener(operasi);
-        findViewById(R.id.btnStop).setOnClickListener(operasi);
-        findViewById(R.id.btnTest).setOnClickListener(operasi);
+        btnStart = (Button) findViewById(R.id.btnStart);
+        btnStart.setOnClickListener(operasi);
+        btnStop = (Button) findViewById(R.id.btnStop);
+        btnStop.setEnabled(false);
+        btnStop.setOnClickListener(operasi);
+        btnTest = (Button) findViewById(R.id.btnTest);
+        btnTest.setOnClickListener(operasi);
+    }
 
-        runTimer();
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_ACTIVITY_RECOGNITION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Permission berhasil dilakukan", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Permission gagal dilakukan", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    @Override
+    public void onLocationChanged(@NonNull Location location) {
+        latValue.setText(String.valueOf(location.getLatitude()));
+        longValue.setText(String.valueOf(location.getLongitude()));
+        Toast.makeText(MainActivity.this, "GPS Captured", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -97,10 +151,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         dataList.add(new String[]{String.valueOf(event.values[0]), String.valueOf(event.values[1]), String.valueOf(event.values[2])});
         testList.add(new String[]{String.valueOf(event.values[0]), String.valueOf(event.values[1]), String.valueOf(event.values[2])});
-        if (seconds % 5 == 0 && seconds != 0) {
-            runPredict();
-            testList.clear();
-        }
     }
 
     @Override
@@ -178,6 +228,41 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 Category result = knnClassifier.predict(resultPoint);
                 Log.d(TAG, "Prediction Result: " + result.name());
                 resultCategory.setText("Prediction Result: " + result.name());
+
+                DataActivity newData = new DataActivity();
+                newData.setNama_user(namaText.getText().toString());
+                newData.setLabel_aktivitas(result.ordinal());
+                newData.setLocations(new Double[] { Double.parseDouble(latValue.getText().toString()),
+                        Double.parseDouble(longValue.getText().toString()) });
+
+                Log.d(TAG, "Locations: " + Arrays.toString(newData.getLocations()));
+
+                Call<PostPutDelData> postDataCall = mApiInterface.storeData(newData);
+                postDataCall.enqueue(new Callback<PostPutDelData>() {
+                    @Override
+                    public void onResponse(Call<PostPutDelData> call, Response<PostPutDelData> response) {
+                        if (response.isSuccessful()) {
+//                            PostPutDelData storeResult = response.body();
+                            Toast.makeText(MainActivity.this, "Berhasil", Toast.LENGTH_SHORT).show();
+                        } else {
+                            try {
+//                                String responseBodyString = response.errorBody().string();
+//                                Log.d(TAG, responseBodyString);
+//                                JSONObject jsonObject = new JSONObject(responseBodyString);
+
+                                Toast.makeText(MainActivity.this, "Gagal", Toast.LENGTH_LONG).show();
+                            } catch (Exception e) {
+                                Log.d(TAG, "Error Body JSON: " + e.getMessage());
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<PostPutDelData> call, Throwable t) {
+                        Toast.makeText(MainActivity.this, "Terjadi kesalahan", Toast.LENGTH_LONG).show();
+                        Log.d(TAG, "Error Retrofit Store: " + t.getMessage());
+                    }
+                });
             }
         });
     }
@@ -187,6 +272,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         handler.post(new Runnable() {
             @Override
             public void run() {
+                if (seconds % 5 == 0 && seconds != 0) {
+                    runPredict();
+                    testList.clear();
+                }
+
                 int hours = seconds / 3600;
                 int minutes = (seconds % 3600) / 60;
                 int secs = seconds % 60;
@@ -208,22 +298,32 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         public void onClick(View view) {
             switch (view.getId()) {
                 case R.id.btnStart:
+                    hideKeyboard(view);
                     startRecord();
                     break;
                 case R.id.btnStop:
+                    hideKeyboard(view);
                     stopRecord();
                     break;
                 case R.id.btnTest:
+                    hideKeyboard(view);
                     testData();
                     break;
             }
         }
     };
 
+    private void hideKeyboard(View view) {
+        InputMethodManager a = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        a.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
     private void startRecord() {
         if (isRecordAlreadyStarted) {
             stopRecord();
         }
+        btnStart.setEnabled(false);
+        btnStop.setEnabled(true);
         timeRunning = true;
         isRecordAlreadyStarted = true;
 
@@ -259,6 +359,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         timeRunning = false;
         seconds = 0;
         isRecordAlreadyStarted = false;
+
+        btnStop.setEnabled(false);
+        btnStart.setEnabled(true);
 
         sensorManager.unregisterListener(MainActivity.this);
         Log.d(TAG, "btnStop: Unregister accelerometer listener");
