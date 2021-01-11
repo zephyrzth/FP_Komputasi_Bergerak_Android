@@ -80,11 +80,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        initWidgets();
-        runTimer();
-    }
-
-    private void initWidgets() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
@@ -92,6 +87,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_ACTIVITY_RECOGNITION);
         }
 
+        initWidgets();
+        runTimer();
+    }
+
+    private void initWidgets() {
         Log.d(TAG, "onCreate: Initializing Sensor Services");
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
