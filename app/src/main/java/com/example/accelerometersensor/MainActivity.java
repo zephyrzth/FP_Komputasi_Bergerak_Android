@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private LocationListener locationListener;
 
     private TextView xValue, yValue, zValue, timeRecord, accuracy, resultCategory, latValue, longValue;
-    private EditText namaText;
+    private EditText namaText, urlText;
     private Button btnStart, btnStop, btnTest;
 
     private String csvFileName;
@@ -110,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         latValue = (TextView) findViewById(R.id.latValue);
         longValue = (TextView) findViewById(R.id.longValue);
         namaText = (EditText) findViewById(R.id.namaText);
+        urlText = (EditText) findViewById(R.id.urlText);
         accuracy = (TextView) findViewById(R.id.accuracy);
         timeRecord = (TextView) findViewById(R.id.timeRecord);
         resultCategory = (TextView) findViewById(R.id.resultCategory);
@@ -212,6 +213,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void runPredict() {
+        ApiClient.BASE_URL = urlText.getText().toString();
         final ArrayList<String[]> testListCopy = new ArrayList<>(testList);
         final Handler handler = new Handler();
         handler.post(new Runnable() {
@@ -237,7 +239,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                 Log.d(TAG, "Locations: " + Arrays.toString(newData.getLocations()));
 
-                Call<PostPutDelData> postDataCall = mApiInterface.storeData(newData);
+                Call<PostPutDelData> postDataCall = mApiInterface.storeData(ApiClient.BASE_URL, newData);
                 postDataCall.enqueue(new Callback<PostPutDelData>() {
                     @Override
                     public void onResponse(Call<PostPutDelData> call, Response<PostPutDelData> response) {
@@ -318,10 +320,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         a.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
+    public static boolean validateNullText(EditText t) {
+        if (t.getText().toString().trim().matches("")) {
+            t.setError("Field harus diisi!");
+            return false;
+        }
+        return true;
+    }
+
     private void startRecord() {
         if (isRecordAlreadyStarted) {
             stopRecord();
         }
+        if (!validateNullText(urlText) || !validateNullText(namaText)) return;
         btnStart.setEnabled(false);
         btnStop.setEnabled(true);
         timeRunning = true;

@@ -14,9 +14,16 @@
         android:layout_centerHorizontal="true">
 
         <EditText
+            android:id="@+id/urlText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Masukkan url lengkap request untuk API server"/>
+
+        <EditText
             android:id="@+id/namaText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_below="@id/urlText"
             android:hint="Masukkan nama Anda"/>
 
         <TextView
