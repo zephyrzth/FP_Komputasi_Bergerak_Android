@@ -87,18 +87,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_ACTIVITY_RECOGNITION);
         }
 
-        initWidgets();
-        runTimer();
-    }
-
-    private void initWidgets() {
-        Log.d(TAG, "onCreate: Initializing Sensor Services");
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_GPS, MIN_DISTANCE_GPS, this);
 
+        initWidgets();
+        runTimer();
+    }
+
+    private void initWidgets() {
+        Log.d(TAG, "onCreate: Initializing Sensor Services");
         mApiInterface = ApiClient.getClient().create(ApiInterface.class);
 
         dataList = new ArrayList<>();
